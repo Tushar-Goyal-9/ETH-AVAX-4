@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract DegenGamingToken is ERC20, Ownable {
+    uint256 public itemCost;
+
+    // Mapping to keep track of items redeemed by each address
+    mapping(address => uint256) public redeemedItems;
+
+    constructor() ERC20("Degen Gaming Token", "DGT") Ownable(msg.sender) {
+        // Mint initial supply to the deployer (msg.sender)
+        _mint(msg.sender, 1000000 * 10 ** decimals());
+        itemCost = 100 * 10 ** decimals(); // Example cost: 100 tokens per item
+    }
+
+   
+    function mint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
+    }
+
+   
+    function burn(uint256 amount) external {
+        _burn(msg.sender, amount);
+    }
+
+  
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        return super.transfer(to, amount);
+    }
+
+   
+    function balanceOf(address account) public view override returns (uint256) {
+        return super.balanceOf(account);
+    }
+
+   
+    function redeem(uint256 itemCount) external {
+        uint256 totalCost = itemCount * itemCost;
+        require(balanceOf(msg.sender) >= totalCost, "Insufficient token balance to redeem items");
+
+        _burn(msg.sender, totalCost);
+        redeemedItems[msg.sender] += itemCount;
+    }
+
+  
+    function setItemCost(uint256 cost) external onlyOwner {
+        itemCost = cost;
+    }
+}
